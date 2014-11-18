@@ -14,8 +14,6 @@ for (twitter_user, followed_by, followers) in twitter_network:
     hfollowers[twitter_user] = int(followers)
     orig_users.add(twitter_user)
 
-SEED = 'EventBrowsr'
-
 # centre around the SEED node and set radius of graph
 g = o
 
