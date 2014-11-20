@@ -1,0 +1,150 @@
+<!DOCTYPE>
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+body {
+  font: 10px sans-serif;
+}
+
+
+</style>
+<body>
+  <button type="button" onclick="refresh()">Refresh</button>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var twitterwords = {"words": [['pizza', 2319], ['nyc', 2260], ['justin', 713], ['night', 444], ['some', 437], ['last', 415], ['went', 403], ['jbcrewdotcom', 369], ['and', 353], ['midnight', 186], ['getting', 171], ['so', 169], ['en', 163], ['yesterday', 161], ['comprando', 160], ['una', 159], ['ibiebersupdates', 159], ['ayer', 158], ['emabiggestfansjustinbieber', 151], ['brick', 150], ['new', 135], ['best', 133], ['ve', 120], ['c', 116], ['tonight', 111], ['got', 101], ['york', 99], ['hide', 92], ['judahworldchamp', 92], ['cuz', 92], ['nikkiglaser', 92], ['mulaney', 92], ['only', 91], ['oh', 87], ['missed', 81], ['like', 81], ['littlejgriffo', 79], ['style', 78], ['can', 73], ['good', 68], ['slice', 66], ['show', 65], ['go', 55], ['la', 54], ['food', 52], ['thinking', 51], ['party', 51], ['time', 48], ['video', 48], ['before', 47], ['nikkibenz', 47], ['if', 46], ['day', 46], ['away', 45], ['couldn', 45], ['city', 45], ['eat', 45], ['them', 44], ['emabigg', 44], ['love', 43], ['remember', 43], ['they', 42], ['girls', 42], ['come', 42], ['bc', 42], ['places', 41], ['ny', 40], ['open', 40], ['minutes', 39], ['marathon', 38], ['eating', 37], ['brooklyn', 36], ['no', 35], ['place', 35], ['halloween', 35], ['looks', 35], ['after', 34], ['free', 34], ['votefifthha', 34], ['around', 34], ['fifthcabaeo', 34], ['til', 33], ['guide', 33], ['ultimate', 32], ['right', 32], ['later', 32], ['people', 31], ['while', 31], ['been', 31], ['turkey', 30], ['everythingnyc', 30], ['gma', 30], ['back', 29], ['ll', 29], ['another', 28], ['slices', 28], ['because', 28], ['favorite', 27], ['better', 26], ['deal', 26]]}
+var height = 400;
+var width = 800;
+var topMargin = 50;
+var widthMargin = 200;
+var fontScale = d3.scale.linear()
+  .domain([d3.min(twitterwords.words, function(d) {return d[1]}), d3.max(twitterwords.words, function(d) {return d[1]})])
+  .range([10, 50]);
+var fontColor = d3.scale.ordinal()
+  .domain([d3.min(twitterwords.words, function(d) {return d[1]}), d3.max(twitterwords.words, function(d) {return d[1]})])
+  .range(["#B0B0B0", "#A0A0A0", "#909090", "#808080", "#707070", "#606060", "#505050", "#404040", "#303030", "#202020", "#101010", "#000000"]);
+var mouseDown = false;
+var xloc;
+var yloc;
+var offsetx;
+var offsety;
+
+var svg = d3.select("body").append("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .attr("class", "wordcloud")
+  .append("g")
+  .attr("transform", "translate(" + width/2 + "," + (height/2 + topMargin) + ")");
+var words = svg.selectAll("text")
+  .data(twitterwords.words)
+  .enter().append("text")
+  .attr("class", "noselect")
+  .attr("transform", function(){
+    var circleWidthRadius = (width-widthMargin)/2;
+    var circleHeightRadius = ((height/2) - topMargin);
+    var xloc = Math.random()*(width - widthMargin) - ((width - widthMargin)/2);
+    var yloc = Math.random()*(height - 2*topMargin) - (height - 2*topMargin)/2;
+    while( ((xloc*xloc)/(circleWidthRadius*circleWidthRadius)) + ((yloc*yloc)/(circleHeightRadius*circleHeightRadius)) >= 1){
+      if(xloc > 0){
+        console.log("GGGGGGGGGG")
+      }
+      else{
+        console.log("less")
+      }
+      xloc = Math.random()*(width - widthMargin) - ((width - widthMargin)/2);
+      yloc = Math.random()*(height - 2*topMargin) - (height - 2*topMargin)/2;
+  }
+    return "translate(" + xloc + "," + yloc + ")";
+  })
+  .style("font-size", function(d){ return fontScale(d[1])})
+
+  .attr("fill", function(d){ return fontColor(d[1])})
+
+  .style("text-anchor", "middle")
+  .attr("user-select", "none")
+  .attr("unselectable", "on")
+  .on("mouseover", function(){
+    d3.select(this)
+      .transition()
+      .duration(50)
+      .style("font-size", 60)
+      .attr("fill", "blue");
+  })
+  .on("mouseout", function(d){
+    mouseDown = false;
+    d3.select(this)
+      .transition()
+      .duration(50)
+      .style("font-size", function(d){ return fontScale(d[1])})
+
+      .attr("fill", function(d){ return fontColor(d[1])});
+
+  })
+  .on("mousedown", function(d){
+    mouseDown = true;
+    d3.select(this).each(moveToFront);
+      var coordinates = [0, 0];
+      coordinates = d3.mouse(this);
+      var xCord = coordinates[0];
+      var yCord = coordinates[1];
+      var currentx = d3.select(this).attr("x");
+      var currenty = d3.select(this).attr("y");
+      offsetx = currentx - xCord;
+      offsety = currenty - yCord;
+  })
+  .on("mousemove", function(d){
+    if(mouseDown == true){
+      var coordinates = [0, 0];
+      coordinates = d3.mouse(this);
+      var xCord = coordinates[0];
+      var yCord = coordinates[1];
+      var currentx = d3.select(this).attr("x");
+      var currenty = d3.select(this).attr("y");
+      d3.select(this)
+        .attr("transform", function(){
+          var currentxTrans = d3.transform(d3.select(this).attr("transform")).translate[0];
+          var currentyTrans = d3.transform(d3.select(this).attr("transform")).translate[1];
+          return "translate(" + (currentxTrans + xCord - currentx + offsetx) + "," + (currentyTrans + yCord - currenty + offsety) +")";
+        })
+    }
+  })
+  .on("mouseup", function(d){
+    mouseDown = false;
+  })
+  .text(function(d) { return d[0]});
+
+
+var moveToFront = function() { 
+    this.parentNode.appendChild(this); 
+}
+
+  function refresh(){
+    var duration = 500;
+    var n = twitterwords.words.length;
+    svg.selectAll("text")
+    .transition()
+    .duration(duration)
+    .delay(function(d,i) {return i / n * duration})
+    .attr("transform", function(){
+    var circleWidthRadius = (width-widthMargin)/2;
+    var circleHeightRadius = ((height/2) - topMargin);
+    var xloc = Math.random()*(width - widthMargin) - ((width - widthMargin)/2);
+    var yloc = Math.random()*(height - 2*topMargin) - ((height - 2*topMargin)/2);
+    while( ((xloc*xloc)/(circleWidthRadius*circleWidthRadius)) + ((yloc*yloc)/(circleHeightRadius*circleHeightRadius)) >= 1){
+      xloc = Math.random()*(width - widthMargin) - ((width - widthMargin)/2);
+      yloc = Math.random()*(height - 2*topMargin) - ((height - 2*topMargin)/2);
+  }
+    return "translate(" + xloc + "," + yloc + ")";
+  })
+
+  }
+</script>
