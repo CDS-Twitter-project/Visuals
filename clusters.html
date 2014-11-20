@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+circle {
+  fill: rgb(31, 119, 180);
+  fill-opacity: .25;
+  stroke: rgb(31, 119, 180);
+  stroke-width: 1px;
+}
+
+.leaf circle {
+  fill: #ff7f0e;
+  fill-opacity: 1;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var diameter = 960,
+    format = d3.format(",d");
+
+var pack = d3.layout.pack()
+    .size([diameter - 4, diameter - 4])
+    .value(function(d) { return d.size; });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  .append("g")
+    .attr("transform", "translate(2,2)");
+
+d3.tsv("tiny_clusters.txt", function(error, root) {
+  var clusters = {
+    "name": "Root",
+    "children": [
+      {
+        "name": 0,
+        "children": []
+      },
+      {
+        "name": 1,
+        "children": []
+      },
+      {
+        "name": 2,
+        "children": []
+      },
+      {
+        "name": 3,
+        "children": []
+      },
+      {
+        "name": 4,
+        "children": []
+      },
+      {
+        "name": 5,
+        "children": []
+      }
+    ]
+  };
+  for (var i = 0; i < root.length; i++) {
+    clusters.children[root[i].cluster].children.push({"name": root[i].text, "children": null, "size": 100});
+  }
+
+  var node = svg.datum(clusters).selectAll(".node")
+      .data(pack.nodes)
+    .enter().append("g")
+      .attr("class", function(d) { return d.children ? "node" : "leaf node"; })
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  node.append("circle")
+      .attr("r", function(d) { return d.r; });
+
+  node.filter(function(d) { return !d.children; }).append("text")
+      .attr("dy", ".3em")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name; });
+});
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
+</script>
