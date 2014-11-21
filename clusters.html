@@ -36,38 +36,21 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(2,2)");
 
-d3.tsv("tiny_clusters.txt", function(error, root) {
+d3.tsv("kmeans10_big.txt", function(error, root) {
   var clusters = {
     "name": "Root",
-    "children": [
-      {
-        "name": 0,
-        "children": []
-      },
-      {
-        "name": 1,
-        "children": []
-      },
-      {
-        "name": 2,
-        "children": []
-      },
-      {
-        "name": 3,
-        "children": []
-      },
-      {
-        "name": 4,
-        "children": []
-      },
-      {
-        "name": 5,
-        "children": []
-      }
-    ]
+    "children": []
   };
+  for (var j = 0; j < 10; j++) {
+    clusters.children.push({"name": j, "children": []});
+  }
   for (var i = 0; i < root.length; i++) {
-    clusters.children[root[i].cluster].children.push({"name": root[i].text, "children": null, "size": 100});
+    console.log(i);
+    if (root[i].cluster === undefined) {
+      root[i + 1].text = root[i].text + root[i + 1].text;
+      continue;
+    }
+    clusters.children[root[i].cluster].children.push({"name": root[i].text, "children": null, "size": 20});
   }
 
   var node = svg.datum(clusters).selectAll(".node")
@@ -82,10 +65,10 @@ d3.tsv("tiny_clusters.txt", function(error, root) {
   node.append("circle")
       .attr("r", function(d) { return d.r; });
 
-  node.filter(function(d) { return !d.children; }).append("text")
-      .attr("dy", ".3em")
-      .style("text-anchor", "middle")
-      .text(function(d) { return d.name; });
+  // node.filter(function(d) { return !d.children; }).append("text")
+  //     .attr("dy", ".3em")
+  //     .style("text-anchor", "middle")
+  //     .text(function(d) { return d.name; });
 });
 
 d3.select(self.frameElement).style("height", diameter + "px");
